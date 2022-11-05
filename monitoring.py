@@ -2,14 +2,24 @@
 import os, requests
 import configparser
 import json
+import datetime
 
 class Monitoring():
     def __init__(self, config_file='config.ini'):
         self.read_config(config_file)
+        now = datetime.datetime.now()
         validator_data = self.get_validator_data()
         self.check_pools(validator_data)
+        if (self.telegram_chat_info_id != None and now.minute == 0):
+            self.check_stats(validator_data)
 
-#     def checkStats(self, validator_data):
+
+    def check_stats(self, validator_data):
+        self.send_validator_stat(
+            validator_data['metadata']['moniker'],
+            str(self.shares_to_decimal(validator_data['total_delegation'])) + self.ticker,
+            str(self.shares_to_decimal(validator_data['self_delegation'])) + self.ticker
+        )
 
     def check_pools(self, validator_data):
         for pool in validator_data['pools']:
@@ -19,7 +29,7 @@ class Monitoring():
                     validator_data['metadata']['moniker'],
                     pool['pool']['name'],
                     'Balance',
-                    str(self.shares_to_decimal(pool['balance'])) + "$KYVE"
+                    str(self.shares_to_decimal(pool['balance'])) + self.ticker
                 )
 
             if (pool['pool']['status'] != 'POOL_STATUS_ACTIVE'):
@@ -72,20 +82,32 @@ class Monitoring():
         else:
             self.telegram_token = None
 
-        if "TELEGRAM_CHAT_ID" in config['VARIABLES']:
-            self.telegram_chat_id = config['VARIABLES']['TELEGRAM_CHAT_ID']
+        if "TELEGRAM_CHAT_ALERT_ID" in config['VARIABLES']:
+            self.telegram_chat_alert_id = config['VARIABLES']['TELEGRAM_CHAT_ALERT_ID']
         else:
-            self.telegram_chat_id = None
+            self.telegram_chat_alert_id = None
+
+        if "TELEGRAM_CHAT_INFO_ID" in config['VARIABLES']:
+            self.telegram_chat_info_id = config['VARIABLES']['TELEGRAM_CHAT_INFO_ID']
+        else:
+            self.telegram_chat_info_id = None
 
         self.decimals = 1000000000
+        self.ticker = "$KYVE"
         self.config = config
 
-    def send(self, msg):
-        if self.telegram_token != None and self.telegram_chat_id != None:
-            requests.post(f'https://api.telegram.org/bot{self.telegram_token}/sendMessage?chat_id={self.telegram_chat_id}&text={msg}&parse_mode=HTML')
+    def send(self, msg, type = 'alert'):
+        if self.telegram_token != None and self.telegram_chat_alert_id != None:
+            if (type == 'alert'):
+                requests.post(f'https://api.telegram.org/bot{self.telegram_token}/sendMessage?chat_id={self.telegram_chat_alert_id}&text={msg}&parse_mode=HTML')
+            else:
+                requests.post(f'https://api.telegram.org/bot{self.telegram_token}/sendMessage?chat_id={self.telegram_chat_info_id}&text={msg}&parse_mode=HTML')
 
     def send_validator_alert(self, alert, moniker, pool, field, value):
         self.send(f"<b>{alert}</b> \n<code>Validator .. {moniker} \nPool ....... {pool} \n{field} .... {value}</code>")
+
+    def send_validator_stat(self, moniker, total_delegation, self_delegation):
+        self.send(f"<b>{moniker}</b> \n<code>Deletegation total / self .. {total_delegation} / {self_delegation}\n</code>", 'info')
 
     def shares_to_decimal(self, shares):
         return round(float( shares ) * (1/self.decimals), 2)
