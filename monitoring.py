@@ -10,7 +10,7 @@ class Monitoring():
         now = datetime.datetime.now()
         validator_data = self.get_validator_data()
         self.check_pools(validator_data)
-        if (self.telegram_chat_info_id != None and now.minute == 0):
+        if (self.telegram_chat_info_id != None and now.minute == 1):
             self.check_stats(validator_data)
 
 
