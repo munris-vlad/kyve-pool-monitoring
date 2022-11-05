@@ -1,0 +1,6 @@
+[VARIABLES]
+API_URL = https://api.beta.kyve.network/
+VALOPER = <valoper>
+TOKEN_FUNDS_ALERT = 80
+TELEGRAM_TOKEN = <telegram bot token>
+TELEGRAM_CHAT_ID = <telegram chat id>
