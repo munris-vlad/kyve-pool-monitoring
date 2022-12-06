@@ -1,5 +1,5 @@
 [VARIABLES]
-API_URL = https://api.beta.kyve.network/
+API_URL = https://api.explorer.kyve.network
 VALOPER = <valoper>
 TOKEN_FUNDS_ALERT = 80
 TELEGRAM_TOKEN = <telegram_token>
