@@ -29,4 +29,4 @@ Note: It will read in the configuration file local to the path of the script if 
 
 ## Add Cronjob
 
-```1,11,21,31,41,51 * * * * /usr/bin/python3 /home/kyve-pool-monitoring/monitoring.py```
+```1,11,21,31,41,51 * * * * cd /home/kyve-beta/kyve-pool-monitoring/ && /usr/bin/python3 monitoring.py```
